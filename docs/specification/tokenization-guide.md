@@ -41,23 +41,23 @@ We offer a range of examples to utilize forms of tokenization in UCP:
 Tokenization handlers transform credentials between source and checkout forms:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                     Tokenization Payment Flow                           │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│   Platform has:            Tokenizer            Business receives:      │
-│   Card Credential    ──▶  /tokenize  ──▶         TokenCredential        │
-│                                                                         │
-│   ┌─────────────────┐                      ┌─────────────────────────┐  │
-│   │ source_         │                      │ checkout_               │  │
-│   │ credentials     │    What goes IN      │ credentials             │  │
-│   │                 │◀───────────────      │                         │  │
-│   │ • card/fpan     │                      │ What comes OUT          │  │
-│   │ • card/dpan     │                ─────▶│ • token                 │  │
-│   │                 │                      │                         │  │
-│   └─────────────────┘                      └─────────────────────────┘  │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------------+
+|                     Tokenization Payment Flow                           |
++-------------------------------------------------------------------------+
+|                                                                         |
+|   Platform has:            Tokenizer            Business receives:      |
+|   Card Credential    -->  /tokenize  -->         TokenCredential        |
+|                                                                         |
+|   +-----------------+                      +-------------------------+  |
+|   | source_         |                      | checkout_               |  |
+|   | credentials     |    What goes IN      | credentials             |  |
+|   |                 |<---------------      |                         |  |
+|   | * card/fpan     |                      | What comes OUT          |  |
+|   | * card/dpan     |                ----->| * token                 |  |
+|   |                 |                      |                         |  |
+|   +-----------------+                      +-------------------------+  |
+|                                                                         |
++-------------------------------------------------------------------------+
 ```
 
 Tokenization handlers accept source credentials (e.g., card with FPAN) and
@@ -69,13 +69,13 @@ Tokens move through distinct phases. Your handler specification must document
 which lifecycle policy you use:
 
 ```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│  Generation  │───▶│   Storage    │───▶│ Detokenize   │───▶│ Invalidation │
-│              │    │              │    │              │    │              │
-│Platform calls│    │ Tokenizer    │    │ Business/PSP │    │ Token expires│
-│ /tokenize    │    │ holds token  │    │ calls        │    │ or is used   │
-│              │    │ → credential │    │ /detokenize  │    │              │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
++--------------+    +--------------+    +--------------+    +--------------+
+|  Generation  |--->|   Storage    |--->| Detokenize   |--->| Invalidation |
+|              |    |              |    |              |    |              |
+|Platform calls|    | Tokenizer    |    | Business/PSP |    | Token expires|
+| /tokenize    |    | holds token  |    | calls        |    | or is used   |
+|              |    | -> credential|    | /detokenize  |    |              |
++--------------+    +--------------+    +--------------+    +--------------+
 ```
 
 | Policy | Description | Use Case |

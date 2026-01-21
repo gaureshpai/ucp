@@ -56,30 +56,30 @@ happens internally within the Processor's secure environment.
 ### Pattern Flow
 
 ```
-┌────────────┐                         ┌───────────────────────────────────┐
-│  Platform  │                         │       Tokenizer / Processor       │
-│ (Collector)│                         │      (Business or PSP)            │
-└─────┬──────┘                         └─────────────────┬─────────────────┘
-      │                                                  │
-      │  1. GET payment.handlers                         │
-      │─────────────────────────────────────────────────>│
-      │                                                  │
-      │  2. Handler Config (URL + Identity)              │
-      │<─────────────────────────────────────────────────│
-      │                                                  │
-      │  3. POST /tokenize (Credential + Identity)       │
-      │─────────────────────────────────────────────────>│
-      │                                                  │
-      │  4. Token                                        │
-      │<─────────────────────────────────────────────────│
-      │                                                  │
-      │  5. POST checkout with TokenCredential           │
-      │─────────────────────────────────────────────────>│
-      │                                                  │
-      │        (Internal Resolution: Token -> Info)      │
-      │                                                  │
-      │  6. Payment Result                               │
-      │<─────────────────────────────────────────────────│
++------------+                         +-----------------------------------+
+|  Platform  |                         |       Tokenizer / Processor       |
+| (Collector)|                         |      (Business or PSP)            |
++-----+------+                         +-----------------+-----------------+
+      |                                                  |
+      |  1. GET payment.handlers                         |
+      |------------------------------------------------->|
+      |                                                  |
+      |  2. Handler Config (URL + Identity)              |
+      |<-------------------------------------------------|
+      |                                                  |
+      |  3. POST /tokenize (Credential + Identity)       |
+      |------------------------------------------------->|
+      |                                                  |
+      |  4. Token                                        |
+      |<-------------------------------------------------|
+      |                                                  |
+      |  5. POST checkout with TokenCredential           |
+      |------------------------------------------------->|
+      |                                                  |
+      |        (Internal Resolution: Token -> Info)      |
+      |                                                  |
+      |  6. Payment Result                               |
+      |<-------------------------------------------------|
 ```
 
 ---
