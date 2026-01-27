@@ -16,13 +16,6 @@
 
 <!-- markdownlint-disable-file MD041 -->
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UCP Playground</title>
-
 <style>
 /* ============================================
    Design System & Reset
@@ -182,8 +175,6 @@ select, input {
 .callout { background: var(--success-bg); border: 1px solid var(--success); color: #0d652d; padding: 12px; border-radius: 8px; margin-top: 16px; font-size: 0.9rem; }
 .badge { background: #e8f0fe; color: var(--accent); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
 </style>
-</head>
-<body>
 
 <div class="container">
   <div class="sectionDescription">
@@ -476,14 +467,14 @@ const UcpData = {
     "dev.ucp.shopping.checkout": [
       {
         version: "2026-01-11",
-        spec: "https://ucp.dev/specs/checkout",
+        spec: "https://ucp.dev/specification/checkout",
         schema: "https://ucp.dev/schemas/shopping/checkout.json"
       }
     ],
     "dev.ucp.shopping.order": [
       {
         version: "2026-01-11",
-        spec: "https://ucp.dev/specs/order",
+        spec: "https://ucp.dev/specification/order",
         schema: "https://ucp.dev/schemas/shopping/order.json"
       }
     ],
@@ -491,7 +482,7 @@ const UcpData = {
       {
         extends: "dev.ucp.shopping.checkout",
         version: "2026-01-11",
-        spec: "https://ucp.dev/specs/fulfillment",
+        spec: "https://ucp.dev/specification/fulfillment",
         schema: "https://ucp.dev/schemas/shopping/fulfillment.json",
         config: {
           allows_multi_destination: {
@@ -509,7 +500,7 @@ const UcpData = {
       {
         extends: "dev.ucp.shopping.checkout",
         version: "2026-01-11",
-        spec: "https://ucp.dev/specs/discount",
+        spec: "https://ucp.dev/specification/discount",
         schema: "https://ucp.dev/schemas/shopping/discount.json"
       }
     ],
@@ -517,7 +508,7 @@ const UcpData = {
       {
         extends: "dev.ucp.shopping.checkout",
         version: "2026-01-11",
-        spec: "https://ucp.dev/specs/buyer_consent",
+        spec: "https://ucp.dev/specification/buyer-consent",
         schema: "https://ucp.dev/schemas/shopping/buyer_consent.json"
       }
     ],
@@ -525,8 +516,8 @@ const UcpData = {
       {
         extends: "dev.ucp.shopping.checkout",
         version: "2026-01-11",
-        spec: "https://ucp.dev/specs/ap2_mandates",
-        schema: "https://ucp.dev/schemas/shopping/ap2_mandates.json"
+        spec: "https://ucp.dev/specification/ap2-mandates",
+        schema: "https://ucp.dev/schemas/shopping/ap2_mandate.json"
       }
     ]
   },
@@ -1103,5 +1094,3 @@ if (document.readyState === 'loading') {
 window.addEventListener('popstate', startUcpPlayground);
 })();
 </script>
-</body>
-</html>
