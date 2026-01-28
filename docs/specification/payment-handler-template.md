@@ -56,7 +56,7 @@ supports.}
 
 {Optional: ASCII diagram showing participant relationships}
 
-```
+```text
 +---------+     +---------------+     +------------+
 |Platform |     |   {Provider}  |     |  Business  |
 +----+----+     +-------+-------+     +------+-----+

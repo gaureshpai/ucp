@@ -65,7 +65,7 @@ compliant credential storage.
 
 ### Pattern Flow: Business Detokenizes
 
-```
+```text
 +-----------------+                              +------------+
 |    Platform     |                              |  Business  |
 |  (Tokenizer)    |                              |            |
@@ -100,7 +100,7 @@ compliant credential storage.
 
 ### Pattern Flow: PSP Detokenizes
 
-```
+```text
 +-----------------+     +------------+      +---------+
 |    Platform     |     |  Business  |      |   PSP   |
 |  (Tokenizer)    |     |            |      |         |

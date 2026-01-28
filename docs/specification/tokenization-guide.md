@@ -45,7 +45,7 @@ We offer a range of examples to utilize forms of tokenization in UCP:
 
 Tokenization handlers transform credentials between source and checkout forms:
 
-```
+```text
 +-------------------------------------------------------------------------+
 |                     Tokenization Payment Flow                           |
 +-------------------------------------------------------------------------+
@@ -73,7 +73,7 @@ produce checkout credentials (e.g., tokens).
 Tokens move through distinct phases. Your handler specification must document
 which lifecycle policy you use:
 
-```
+```text
 +--------------+    +--------------+    +--------------+    +--------------+
 |  Generation  |--->|   Storage    |--->| Detokenize   |--->| Invalidation |
 |              |    |              |    |              |    |              |

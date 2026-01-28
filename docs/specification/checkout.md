@@ -58,7 +58,7 @@ The checkout `status` field indicates the current phase of the session and
 determines what action is required next. The business sets the status; the
 platform receives messages indicating what's needed to progress.
 
-```
+```text
        +------------+                         +---------------------+
        | incomplete |<----------------------->| requires_escalation |
        +-----+------+                         |   (buyer handoff    |

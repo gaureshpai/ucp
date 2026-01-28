@@ -59,7 +59,7 @@ Compliance requirements vary by credential type.
 
 ### Pattern Flow
 
-```
+```text
 +-----------------+                              +------------+
 |  Platform       |                              |  Business  |
 |                 |                              |            |

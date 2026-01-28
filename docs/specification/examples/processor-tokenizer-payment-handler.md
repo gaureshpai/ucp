@@ -60,7 +60,7 @@ happens internally within the Processor's secure environment.
 
 ### Pattern Flow
 
-```
+```text
 +------------+                         +-----------------------------------+
 |  Platform  |                         |       Tokenizer / Processor       |
 | (Collector)|                         |      (Business or PSP)            |
