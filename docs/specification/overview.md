@@ -16,8 +16,6 @@
 
 # Universal Commerce Protocol (UCP) Official Specification
 
-**Version:** `2026-01-11`
-
 ## Overarching guidelines
 
 The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**,
@@ -167,20 +165,43 @@ functionality is supported and where to find documentation and schemas.
 #### Extensions
 
 An **extension** is an optional module that augments another capability.
-Extensions use the `extends` field to declare their parent:
+Extensions use the `extends` field to declare their parent(s):
 
 ```json
 {
   "dev.ucp.shopping.fulfillment": [
     {
-      "version": "2026-01-11",
-      "spec": "https://ucp.dev/specification/fulfillment",
-      "schema": "https://ucp.dev/schemas/shopping/fulfillment.json",
+      "version": "2026-01-23",
+      "spec": "https://ucp.dev/2026-01-23/specification/fulfillment",
+      "schema": "https://ucp.dev/2026-01-23/schemas/shopping/fulfillment.json",
       "extends": "dev.ucp.shopping.checkout"
     }
   ]
 }
 ```
+
+##### Multi-Parent Extensions
+
+Extensions **MAY** extend multiple parent capabilities by using an array:
+
+```json
+{
+  "dev.ucp.shopping.discount": [
+    {
+      "version": "2026-01-23",
+      "spec": "https://ucp.dev/2026-01-23/specification/discount",
+      "schema": "https://ucp.dev/2026-01-23/schemas/shopping/discount.json",
+      "extends": ["dev.ucp.shopping.checkout", "dev.ucp.shopping.cart"]
+    }
+  ]
+}
+```
+
+When an extension declares multiple parents:
+
+- The extension **MAY** define different fields for each capability it extends
+    (e.g., `loyalty_earned` for checkout, `loyalty_preview` for cart)
+- See [Intersection Algorithm](#intersection-algorithm) for negotiation rules
 
 Extensions can be:
 
@@ -204,13 +225,16 @@ modify `totals`, fulfillment adds fulfillment to `totals.type`).
 
 #### Extension Schema Pattern
 
-Extension schemas define composed types using `allOf`. An example is as follows:
+Extension schemas define composed types using `allOf`. The `$defs` key **MUST**
+use the full parent capability name (reverse-domain format) to enable
+deterministic schema resolution:
 
 ```json
 {
   "$defs": {
     "discounts_object": { ... },
-    "checkout": {
+    "dev.ucp.shopping.checkout": {
+      "title": "Checkout with Discount",
       "allOf": [
         {"$ref": "checkout.json"},
         {
@@ -227,7 +251,32 @@ Extension schemas define composed types using `allOf`. An example is as follows:
 }
 ```
 
-Composed type names **MUST** use the pattern: `{capability-name}.{TypeName}`
+**Requirements:**
+
+- Extension schemas **MUST** have a `$defs` entry for each parent declared in
+    `extends`
+- The `$defs` key **MUST** match the parent's full capability name exactly
+
+This convention ensures:
+
+- **Self-documenting**: The schema declares exactly which parents it extends
+- **Deterministic resolution**: The `extends` value maps directly to the `$defs` key
+- **Verifiable**: Build-time checks can confirm each `extends` entry has a
+    matching `$defs` key
+
+#### Schema Resolution Convention
+
+To validate payloads, implementations resolve extension schemas as follows:
+
+1. Determine the root capability from the operation (e.g., checkout operations
+    use `dev.ucp.shopping.checkout`)
+2. For each active extension, resolve and apply its `$defs[{root_capability}]`
+
+**Example:** A checkout response includes the discount extension.
+
+- Root capability: `dev.ucp.shopping.checkout`
+- Extension schema: `discount.json`
+- Resolve: `discount.json#/$defs/dev.ucp.shopping.checkout`
 
 #### Resolution Flow
 
@@ -509,7 +558,10 @@ for a session:
     result if a platform capability with the same `name` exists.
 
 2. **Prune orphaned extensions**: Remove any capability where `extends` is
-    set but the parent capability is not in the intersection.
+    set but **none** of its parent capabilities are in the intersection.
+    - For single-parent extensions (`extends: "string"`): parent must be present
+    - For multi-parent extensions (`extends: ["a", "b"]`): at least one parent
+        must be present
 
 3. **Repeat pruning**: Continue step 2 until no more capabilities are removed
     (handles transitive extension chains).
@@ -519,19 +571,124 @@ dependencies satisfied.
 
 #### Error Handling
 
-If negotiation fails, businesses **MUST** return an error response:
+UCP negotiation can fail in two ways:
 
-```json
-{
-  "status": "requires_escalation",
-  "messages": [{
-    "type": "error",
-    "code": "version_unsupported",
-    "message": "Version 2026-01-11 is not supported.",
-    "severity": "requires_buyer_input"
-  }]
-}
-```
+1. **Discovery failure**: The business cannot fetch or parse the platform's
+   profile.
+
+2. **Negotiation failure**: The provided profile is valid but capability
+   intersection is empty or versions are incompatible.
+
+These failure types require different handling:
+
+- **Discovery failure** → transport error with optional `continue_url`
+- **Negotiation failure** → UCP response with optional `continue_url`
+
+##### Error Codes
+
+| Code                        | Description                                          | REST | MCP    |
+| --------------------------- | ---------------------------------------------------- | ---- | ------ |
+| `INVALID_PROFILE_URL`       | Profile URL is malformed, missing, or unresolvable   | 400  | error  |
+| `PROFILE_UNREACHABLE`       | Resolved URL but fetch failed (timeout, non-2xx)     | 424  | error  |
+| `PROFILE_MALFORMED`         | Fetched content is not valid JSON or violates schema | 422  | error  |
+| `CAPABILITIES_INCOMPATIBLE` | No compatible capabilities in intersection           | 200  | result |
+| `VERSION_UNSUPPORTED`       | Platform's UCP version is not supported              | 200  | result |
+
+##### The `continue_url` Field
+
+When UCP negotiation fails, `continue_url` provides a fallback web experience.
+Businesses **SHOULD** provide the most contextually relevant URL:
+
+- For checkout operations: link to the cart or checkout page
+- For catalog operations: link to the product or search results
+- As a fallback: link to the storefront homepage
+
+This enables graceful degradation—agents can redirect buyers to complete their
+task through the standard web interface.
+
+##### Transport Bindings
+
+=== "REST"
+
+    **Discovery Failure (424):**
+
+    ```http
+    HTTP/1.1 424 Failed Dependency
+    Content-Type: application/json
+
+    {
+      "code": "PROFILE_UNREACHABLE",
+      "content": "Unable to fetch agent profile: connection timeout",
+      "continue_url": "https://merchant.com/cart"
+    }
+    ```
+
+    **Negotiation Failure (200):**
+
+    ```http
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+      "ucp": {
+        "version": "2026-01-11",
+        "capabilities": {}
+      },
+      "messages": [
+        {
+          "type": "error",
+          "code": "VERSION_UNSUPPORTED",
+          "content": "Platform UCP version 2024-01-01 is not supported",
+          "severity": "requires_buyer_input"
+        }
+      ],
+      "continue_url": "https://merchant.com/cart"
+    }
+    ```
+
+=== "MCP"
+
+    **Discovery Failure (JSON-RPC error):**
+
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "error": {
+        "code": -32001,
+        "message": "UCP discovery failed",
+        "data": {
+          "code": "PROFILE_UNREACHABLE",
+          "content": "Unable to fetch agent profile: connection timeout",
+          "continue_url": "https://merchant.com/cart"
+        }
+      }
+    }
+    ```
+
+    **Negotiation Failure (JSON-RPC result):**
+
+    ```json
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "ucp": {
+          "version": "2026-01-11",
+          "capabilities": {}
+        },
+        "messages": [
+          {
+            "type": "error",
+            "code": "VERSION_UNSUPPORTED",
+            "content": "Platform UCP version 2024-01-01 is not supported",
+            "severity": "requires_buyer_input"
+          }
+        ],
+        "continue_url": "https://merchant.com/cart"
+      }
+    }
+    ```
 
 #### Capability Declaration in Responses
 
@@ -560,6 +717,35 @@ The `capabilities` registry in responses indicates active capabilities:
   ... other fields
 }
 ```
+
+#### Response Capability Selection
+
+Businesses **MUST** include in `ucp.capabilities` only the capabilities that are:
+
+1. In the negotiated intersection for this session, AND
+2. Relevant to this response's operation type
+
+**Root Capability Relevance:**
+
+A root capability is relevant if it matches the operation type:
+
+- `create_checkout` / `update_checkout` / `complete_checkout` →
+    `dev.ucp.shopping.checkout`
+- `create_cart` / `update_cart` → `dev.ucp.shopping.cart`
+- Order webhooks → `dev.ucp.shopping.order`
+
+**Extension Relevance:**
+
+An extension is relevant if **any** of its `extends` values matches a relevant
+root capability.
+
+**Selection Examples:**
+
+| Response Type | Includes                        | Does NOT Include             |
+| ------------- | ------------------------------- | ---------------------------- |
+| Checkout      | checkout, discount, fulfillment | cart, order                  |
+| Cart          | cart, discount                  | checkout, fulfillment, order |
+| Order         | order                           | checkout, cart, discount     |
 
 ## Payment Architecture
 
@@ -1182,7 +1368,7 @@ Version unsupported error:
   "messages": [{
     "type": "error",
     "code": "version_unsupported",
-    "message": "Version 2026-01-12 is not supported. This business implements version 2026-01-11.",
+    "content": "Version 2026-01-12 is not supported. This business implements version 2026-01-11.",
     "severity": "requires_buyer_input"
   }]
 }
@@ -1251,4 +1437,3 @@ Vendors control their own release schedules and versioning strategy.
 | **Payment Service Provider**      | PSP     | The financial infrastructure provider that processes payments, authorizations, and settlements on behalf of the business.                                 |
 | **Platform**                      | -       | The consumer-facing surface (AI agent, app, website) acting on behalf of the user to discover businesses and facilitate commerce.                         |
 | **Verifiable Digital Credential** | VDC     | An Issuer-signed credential (set of claims) whose authenticity can be verified cryptographically. Used in UCP for secure payment authorizations.          |
-| **Verifiable Presentation**       | VP      | A presentation of one or more VDCs that includes a cryptographic proof of binding, used to prove authorization to a business or PSP.                      |
