@@ -222,6 +222,10 @@ requirements.
 
 ### Total
 
+The same totals contract applies to cart and checkout. See
+[Checkout Totals](checkout.md#totals) for the rendering contract, accounting
+identity, well-known types, repeating types, and sub-line semantics.
+
 {{ schema_fields('types/total_resp', 'checkout') }}
 
 Taxes MAY be included where calculable. Platforms SHOULD assume cart totals

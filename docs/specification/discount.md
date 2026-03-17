@@ -80,6 +80,9 @@ When this capability is active, cart and/or checkout are extended with a
 ## Allocation Details
 
 The `applied` array explains how discounts were calculated and distributed.
+The `applied[].amount` describes the magnitude of the applied discount (always
+positive); the corresponding `totals[]` entry amount represents its signed
+effect on the receipt (negative for discounts).
 
 ### Allocation Method
 
@@ -274,7 +277,7 @@ stacking and allocation details:
       },
       "totals": [
         {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
-        {"type": "items_discount", "display_text": "Discounts", "amount": 250},
+        {"type": "items_discount", "display_text": "Discounts", "amount": -250},
         {"type": "total", "display_text": "Total", "amount": 4750}
       ]
     }
@@ -356,7 +359,7 @@ proceeding to checkout.
           },
           "totals": [
             {"type": "subtotal", "amount": 4000},
-            {"type": "items_discount", "amount": 800},
+            {"type": "items_discount", "amount": -800},
             {"type": "total", "amount": 3200}
           ]
         }
@@ -378,7 +381,7 @@ proceeding to checkout.
       "currency": "USD",
       "totals": [
         {"type": "subtotal", "display_text": "Subtotal", "amount": 4000},
-        {"type": "items_discount", "display_text": "Item Discounts", "amount": 800},
+        {"type": "items_discount", "display_text": "Item Discounts", "amount": -800},
         {"type": "total", "display_text": "Estimated Total", "amount": 3200}
       ]
     }
@@ -415,7 +418,7 @@ to the order as a whole and uses `type: "discount"` in totals.
       },
       "totals": [
         {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
-        {"type": "discount", "display_text": "Order Discount", "amount": 1000},
+        {"type": "discount", "display_text": "Order Discount", "amount": -1000},
         {"type": "total", "display_text": "Total", "amount": 4000}
       ]
     }
@@ -451,7 +454,7 @@ to line items, and an automatic shipping discount at the order level.
           },
           "totals": [
             {"type": "subtotal", "amount": 4000},
-            {"type": "items_discount", "amount": 800},
+            {"type": "items_discount", "amount": -800},
             {"type": "total", "amount": 3200}
           ]
         }
@@ -476,8 +479,8 @@ to line items, and an automatic shipping discount at the order level.
       },
       "totals": [
         {"type": "subtotal", "display_text": "Subtotal", "amount": 4000},
-        {"type": "items_discount", "display_text": "Item Discounts", "amount": 800},
-        {"type": "discount", "display_text": "Order Discounts", "amount": 599},
+        {"type": "items_discount", "display_text": "Item Discounts", "amount": -800},
+        {"type": "discount", "display_text": "Order Discounts", "amount": -599},
         {"type": "fulfillment", "display_text": "Shipping", "amount": 0},
         {"type": "total", "display_text": "Total", "amount": 2601}
       ]
@@ -516,7 +519,7 @@ but not in `discounts.applied`.
       },
       "totals": [
         {"type": "subtotal", "display_text": "Subtotal", "amount": 5000},
-        {"type": "discount", "display_text": "Order Discount", "amount": 1000},
+        {"type": "discount", "display_text": "Order Discount", "amount": -1000},
         {"type": "total", "display_text": "Total", "amount": 4000}
       ],
       "messages": [
@@ -547,7 +550,7 @@ Multiple discounts applied with full allocation breakdown:
           },
           "totals": [
             {"type": "subtotal", "amount": 6000},
-            {"type": "items_discount", "amount": 1500},
+            {"type": "items_discount", "amount": -1500},
             {"type": "total", "amount": 4500}
           ]
         },
@@ -559,7 +562,7 @@ Multiple discounts applied with full allocation breakdown:
           },
           "totals": [
             {"type": "subtotal", "amount": 4000},
-            {"type": "items_discount", "amount": 1000},
+            {"type": "items_discount", "amount": -1000},
             {"type": "total", "amount": 3000}
           ]
         }
@@ -593,7 +596,7 @@ Multiple discounts applied with full allocation breakdown:
       },
       "totals": [
         {"type": "subtotal", "display_text": "Subtotal", "amount": 10000},
-        {"type": "items_discount", "display_text": "Item Discounts", "amount": 2500},
+        {"type": "items_discount", "display_text": "Item Discounts", "amount": -2500},
         {"type": "total", "display_text": "Total", "amount": 7500}
       ]
     }
